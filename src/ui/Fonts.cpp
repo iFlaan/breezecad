@@ -133,7 +133,12 @@ bool Fonts::Load(const std::filesystem::path& assetsDir, float scale, const std:
     loadedLanguage = language;
     if (language == "zh" || language == "ja" || language == "ko" || language == "ar") {
         int face = 0;
-        const std::filesystem::path cjk = CjkFont(language, languagePacks, face);
+        // Arabic ships with the program (assets/fonts), so a build without language packs (Android) has it too.
+        const auto bundled = dir / "NotoSansArabic-Regular.ttf";
+        std::error_code bundledError;
+        const std::filesystem::path cjk = language == "ar" && std::filesystem::exists(bundled, bundledError)
+                                              ? bundled
+                                              : CjkFont(language, languagePacks, face);
         if (cjk.empty()) {
             log::Warn("No font with {} glyphs found: text in that language shows question marks", language);
         } else {
